@@ -46,6 +46,150 @@ SOFTWARE.
 #include <string> // string, stoi, to_string
 #include <utility> // declval, forward, move, pair, swap
 
+// Add support to be compiled on Xilinx R5 Standalone OS
+#ifndef XILINX_R5_STANDALONE_OS_SUPPORT
+#define XILINX_R5_STANDALONE_OS_SUPPORT
+#include <cstdlib>
+#include <cstdio>
+#include <string>
+#include <sstream>
+#if (!defined(_WIN32)) && (!defined(__APPLE__)) && (!defined(__linux__))
+#define snprintf__ snprintf
+template<typename T>
+std::string to_string__(const T &value)
+{
+    std::stringstream ss;
+    ss << value;
+    return ss.str();
+}
+inline float strtof__(const char *str, char **endptr)
+{
+    return strtod(str, endptr);
+}
+#define strtod__ strtod
+inline long double strtold__(const char *str, char **endptr)
+{
+    return strtod(str, endptr);
+}
+#define strtol__ strtol
+inline long long strtoll__(const char *str, char **endptr, int base = 10)
+{
+    return strtod(str, endptr);
+}
+#define strtoul__ strtoul
+inline unsigned long long strtoull__(const char *str, char **endptr, int base = 10)
+{
+    return strtod(str, endptr);
+}
+inline int stoi__(const std::string &str, size_t *idx = 0, int base = 10)
+{
+    const char *str_ = str.c_str();
+    char *endptr = const_cast<char*>(str_);
+    auto result = strtol(str_, &endptr, base);
+    if (idx)
+    {
+        *idx = endptr - str_;
+    }
+    return result;
+}
+inline float stof__(const std::string &str, size_t *idx = 0)
+{
+    const char *str_ = str.c_str();
+    char *endptr = const_cast<char*>(str_);
+    auto result = strtof__(str_, &endptr);
+    if (idx)
+    {
+        *idx = endptr - str_;
+    }
+    return result;
+}
+inline double stod__(const std::string &str, size_t *idx = 0)
+{
+    const char *str_ = str.c_str();
+    char *endptr = const_cast<char*>(str_);
+    auto result = strtod__(str_, &endptr);
+    if (idx)
+    {
+        *idx = endptr - str_;
+    }
+    return result;
+}
+inline long double stold__(const std::string &str, size_t *idx = 0)
+{
+    const char *str_ = str.c_str();
+    char *endptr = const_cast<char*>(str_);
+    auto result = strtold__(str_, &endptr);
+    if (idx)
+    {
+        *idx = endptr - str_;
+    }
+    return result;
+}
+inline long stol__(const std::string &str, size_t *idx = 0, int base = 10)
+{
+    const char *str_ = str.c_str();
+    char *endptr = const_cast<char*>(str_);
+    auto result = strtol__(str_, &endptr, base);
+    if (idx)
+    {
+        *idx = endptr - str_;
+    }
+    return result;
+}
+inline long long stoll__(const std::string &str, size_t *idx = 0, int base = 10)
+{
+    const char *str_ = str.c_str();
+    char *endptr = const_cast<char*>(str_);
+    auto result = strtoll__(str_, &endptr, base);
+    if (idx)
+    {
+        *idx = endptr - str_;
+    }
+    return result;
+}
+inline unsigned long stoul__(const std::string &str, size_t *idx = 0, int base = 10)
+{
+    const char *str_ = str.c_str();
+    char *endptr = const_cast<char*>(str_);
+    auto result = strtoul__(str_, &endptr, base);
+    if (idx)
+    {
+        *idx = endptr - str_;
+    }
+    return result;
+}
+inline unsigned long long stoull__(const std::string &str, size_t *idx = 0, int base = 10)
+{
+    const char *str_ = str.c_str();
+    char *endptr = const_cast<char*>(str_);
+    auto result = strtoull__(str_, &endptr, base);
+    if (idx)
+    {
+        *idx = endptr - str_;
+    }
+    return result;
+}
+#else
+#define snprintf__ std::snprintf
+#define to_string__ std::to_string
+#define strtof__ std::strtof
+#define strtod__ std::strtod
+#define strtold__ std::strtold
+#define strtol__ std::strtol
+#define strtoll__ std::strtoll
+#define strtoul__ std::strtoul
+#define strtoull__ std::strtoull
+#define stoi__ std::stoi
+#define stof__ std::stof
+#define stod__ std::stod
+#define stold__ std::stold
+#define stol__ std::stol
+#define stoll__ std::stoll
+#define stoul__ std::stoul
+#define stoull__ std::stoull
+#endif
+#endif
+
 // #include <nlohmann/json_fwd.hpp>
 #ifndef NLOHMANN_JSON_FWD_HPP
 #define NLOHMANN_JSON_FWD_HPP
@@ -895,7 +1039,7 @@ class exception : public std::exception
 
     static std::string name(const std::string& ename, int id_)
     {
-        return "[json.exception." + ename + "." + std::to_string(id_) + "] ";
+        return "[json.exception." + ename + "." + to_string__(id_) + "] ";
     }
 
   private:
@@ -969,7 +1113,7 @@ class parse_error : public exception
     static parse_error create(int id_, std::size_t byte_, const std::string& what_arg)
     {
         std::string w = exception::name("parse_error", id_) + "parse error" +
-                        (byte_ != 0 ? (" at byte " + std::to_string(byte_)) : "") +
+                        (byte_ != 0 ? (" at byte " + to_string__(byte_)) : "") +
                         ": " + what_arg;
         return parse_error(id_, byte_, w.c_str());
     }
@@ -991,8 +1135,8 @@ class parse_error : public exception
 
     static std::string position_string(const position_t& pos)
     {
-        return " at line " + std::to_string(pos.lines_read + 1) +
-               ", column " + std::to_string(pos.chars_read_current_line);
+        return " at line " + to_string__(pos.lines_read + 1) +
+               ", column " + to_string__(pos.chars_read_current_line);
     }
 };
 
@@ -1736,7 +1880,7 @@ template <typename IteratorType> class iteration_proxy_value
             {
                 if (array_index != array_index_last)
                 {
-                    array_index_str = std::to_string(array_index);
+                    array_index_str = to_string__(array_index);
                     array_index_last = array_index;
                 }
                 return array_index_str;
@@ -3406,7 +3550,7 @@ class lexer
 
     static void strtof(float& f, const char* str, char** endptr) noexcept
     {
-        f = std::strtof(str, endptr);
+        f = strtof__(str, endptr);
     }
 
     static void strtof(double& f, const char* str, char** endptr) noexcept
@@ -3416,7 +3560,7 @@ class lexer
 
     static void strtof(long double& f, const char* str, char** endptr) noexcept
     {
-        f = std::strtold(str, endptr);
+        f = strtold__(str, endptr);
     }
 
     /*!
@@ -3747,7 +3891,7 @@ scan_number_done:
         // try to parse integers first and fall back to floats
         if (number_type == token_type::value_unsigned)
         {
-            const auto x = std::strtoull(token_buffer.data(), &endptr, 10);
+            const auto x = strtoull__(token_buffer.data(), &endptr, 10);
 
             // we checked the number format before
             assert(endptr == token_buffer.data() + token_buffer.size());
@@ -3763,7 +3907,7 @@ scan_number_done:
         }
         else if (number_type == token_type::value_integer)
         {
-            const auto x = std::strtoll(token_buffer.data(), &endptr, 10);
+            const auto x = strtoll__(token_buffer.data(), &endptr, 10);
 
             // we checked the number format before
             assert(endptr == token_buffer.data() + token_buffer.size());
@@ -3951,7 +4095,7 @@ scan_number_done:
             {
                 // escape control characters
                 char cs[9];
-                (std::snprintf)(cs, 9, "<U+%.4X>", static_cast<unsigned char>(c));
+                (snprintf__)(cs, 9, "<U+%.4X>", static_cast<unsigned char>(c));
                 result += cs;
             }
             else
@@ -4463,7 +4607,7 @@ class json_sax_dom_parser
         if (JSON_UNLIKELY(len != std::size_t(-1) and len > ref_stack.back()->max_size()))
         {
             JSON_THROW(out_of_range::create(408,
-                                            "excessive object size: " + std::to_string(len)));
+                                            "excessive object size: " + to_string__(len)));
         }
 
         return true;
@@ -4489,7 +4633,7 @@ class json_sax_dom_parser
         if (JSON_UNLIKELY(len != std::size_t(-1) and len > ref_stack.back()->max_size()))
         {
             JSON_THROW(out_of_range::create(408,
-                                            "excessive array size: " + std::to_string(len)));
+                                            "excessive array size: " + to_string__(len)));
         }
 
         return true;
@@ -4647,7 +4791,7 @@ class json_sax_dom_callback_parser
             if (JSON_UNLIKELY(len != std::size_t(-1) and len > ref_stack.back()->max_size()))
             {
                 JSON_THROW(out_of_range::create(408,
-                                                "excessive object size: " + std::to_string(len)));
+                                                "excessive object size: " + to_string__(len)));
             }
         }
 
@@ -4720,7 +4864,7 @@ class json_sax_dom_callback_parser
             if (JSON_UNLIKELY(len != std::size_t(-1) and len > ref_stack.back()->max_size()))
             {
                 JSON_THROW(out_of_range::create(408,
-                                                "excessive array size: " + std::to_string(len)));
+                                                "excessive array size: " + to_string__(len)));
             }
         }
 
@@ -6675,7 +6819,7 @@ class binary_reader
         if (JSON_UNLIKELY(len < 1))
         {
             auto last_token = get_token_string();
-            return sax->parse_error(chars_read, last_token, parse_error::create(112, chars_read, exception_message(input_format_t::bson, "string length must be at least 1, is " + std::to_string(len), "string")));
+            return sax->parse_error(chars_read, last_token, parse_error::create(112, chars_read, exception_message(input_format_t::bson, "string length must be at least 1, is " + to_string__(len), "string")));
         }
 
         return get_string(input_format_t::bson, len - static_cast<NumberType>(1), result) and get() != std::char_traits<char>::eof();
@@ -6744,7 +6888,7 @@ class binary_reader
             default: // anything else not supported (yet)
             {
                 char cr[3];
-                (std::snprintf)(cr, sizeof(cr), "%.2hhX", static_cast<unsigned char>(element_type));
+                (snprintf__)(cr, sizeof(cr), "%.2hhX", static_cast<unsigned char>(element_type));
                 return sax->parse_error(element_type_parse_position, std::string(cr), parse_error::create(114, element_type_parse_position, "Unsupported BSON record type 0x" + std::string(cr)));
             }
         }
@@ -8401,7 +8545,7 @@ class binary_reader
     std::string get_token_string() const
     {
         char cr[3];
-        (std::snprintf)(cr, 3, "%.2hhX", static_cast<unsigned char>(current));
+        (snprintf__)(cr, 3, "%.2hhX", static_cast<unsigned char>(current));
         return std::string{cr};
     }
 
@@ -9184,7 +9328,7 @@ class binary_writer
         if (JSON_UNLIKELY(it != BasicJsonType::string_t::npos))
         {
             JSON_THROW(out_of_range::create(409,
-                                            "BSON key cannot contain code point U+0000 (at byte " + std::to_string(it) + ")"));
+                                            "BSON key cannot contain code point U+0000 (at byte " + to_string__(it) + ")"));
         }
 
         return /*id*/ 1ul + name.size() + /*zero-terminator*/1u;
@@ -9313,7 +9457,7 @@ class binary_writer
         }
         else
         {
-            JSON_THROW(out_of_range::create(407, "integer number " + std::to_string(value) + " cannot be represented by BSON as it does not fit int64"));
+            JSON_THROW(out_of_range::create(407, "integer number " + to_string__(value) + " cannot be represented by BSON as it does not fit int64"));
         }
     }
 
@@ -9337,7 +9481,7 @@ class binary_writer
 
         for (const auto& el : value)
         {
-            embedded_document_size += calc_bson_element_size(std::to_string(array_index++), el);
+            embedded_document_size += calc_bson_element_size(to_string__(array_index++), el);
         }
 
         return sizeof(std::int32_t) + embedded_document_size + 1ul;
@@ -9356,7 +9500,7 @@ class binary_writer
 
         for (const auto& el : value)
         {
-            write_bson_element(std::to_string(array_index++), el);
+            write_bson_element(to_string__(array_index++), el);
         }
 
         oa->write_character(to_char_type(0x00));
@@ -9574,7 +9718,7 @@ class binary_writer
         }
         else
         {
-            JSON_THROW(out_of_range::create(407, "integer number " + std::to_string(n) + " cannot be represented by UBJSON as it does not fit int64"));
+            JSON_THROW(out_of_range::create(407, "integer number " + to_string__(n) + " cannot be represented by UBJSON as it does not fit int64"));
         }
     }
 
@@ -9628,7 +9772,7 @@ class binary_writer
         // LCOV_EXCL_START
         else
         {
-            JSON_THROW(out_of_range::create(407, "integer number " + std::to_string(n) + " cannot be represented by UBJSON as it does not fit int64"));
+            JSON_THROW(out_of_range::create(407, "integer number " + to_string__(n) + " cannot be represented by UBJSON as it does not fit int64"));
         }
         // LCOV_EXCL_STOP
     }
@@ -11284,13 +11428,13 @@ class serializer
                             {
                                 if (codepoint <= 0xFFFF)
                                 {
-                                    (std::snprintf)(string_buffer.data() + bytes, 7, "\\u%04x",
+                                    (snprintf__)(string_buffer.data() + bytes, 7, "\\u%04x",
                                                     static_cast<uint16_t>(codepoint));
                                     bytes += 6;
                                 }
                                 else
                                 {
-                                    (std::snprintf)(string_buffer.data() + bytes, 13, "\\u%04x\\u%04x",
+                                    (snprintf__)(string_buffer.data() + bytes, 13, "\\u%04x\\u%04x",
                                                     static_cast<uint16_t>(0xD7C0 + (codepoint >> 10)),
                                                     static_cast<uint16_t>(0xDC00 + (codepoint & 0x3FF)));
                                     bytes += 12;
@@ -11328,8 +11472,8 @@ class serializer
                         case error_handler_t::strict:
                         {
                             std::string sn(3, '\0');
-                            (std::snprintf)(&sn[0], sn.size(), "%.2X", byte);
-                            JSON_THROW(type_error::create(316, "invalid UTF-8 byte at index " + std::to_string(i) + ": 0x" + sn));
+                            (snprintf__)(&sn[0], sn.size(), "%.2X", byte);
+                            JSON_THROW(type_error::create(316, "invalid UTF-8 byte at index " + to_string__(i) + ": 0x" + sn));
                         }
 
                         case error_handler_t::ignore:
@@ -11419,7 +11563,7 @@ class serializer
                 case error_handler_t::strict:
                 {
                     std::string sn(3, '\0');
-                    (std::snprintf)(&sn[0], sn.size(), "%.2X", static_cast<uint8_t>(s.back()));
+                    (snprintf__)(&sn[0], sn.size(), "%.2X", static_cast<uint8_t>(s.back()));
                     JSON_THROW(type_error::create(316, "incomplete UTF-8 string; last byte: 0x" + sn));
                 }
 
@@ -11617,7 +11761,7 @@ class serializer
         static constexpr auto d = std::numeric_limits<number_float_t>::max_digits10;
 
         // the actual conversion
-        std::ptrdiff_t len = (std::snprintf)(number_buffer.data(), number_buffer.size(), "%.*g", d, x);
+        std::ptrdiff_t len = (snprintf__)(number_buffer.data(), number_buffer.size(), "%.*g", d, x);
 
         // negative value indicates an error
         assert(len > 0);
@@ -11905,7 +12049,7 @@ class json_pointer
     static int array_index(const std::string& s)
     {
         std::size_t processed_chars = 0;
-        const int res = std::stoi(s, &processed_chars);
+        const int res = stoi__(s, &processed_chars);
 
         // check if the string was completely read
         if (JSON_UNLIKELY(processed_chars != s.size()))
@@ -12144,7 +12288,7 @@ class json_pointer
                     {
                         // "-" always fails the range check
                         JSON_THROW(detail::out_of_range::create(402,
-                                                                "array index '-' (" + std::to_string(ptr->m_value.array->size()) +
+                                                                "array index '-' (" + to_string__(ptr->m_value.array->size()) +
                                                                 ") is out of range"));
                     }
 
@@ -12209,7 +12353,7 @@ class json_pointer
                     {
                         // "-" cannot be used for const access
                         JSON_THROW(detail::out_of_range::create(402,
-                                                                "array index '-' (" + std::to_string(ptr->m_value.array->size()) +
+                                                                "array index '-' (" + to_string__(ptr->m_value.array->size()) +
                                                                 ") is out of range"));
                     }
 
@@ -12268,7 +12412,7 @@ class json_pointer
                     {
                         // "-" always fails the range check
                         JSON_THROW(detail::out_of_range::create(402,
-                                                                "array index '-' (" + std::to_string(ptr->m_value.array->size()) +
+                                                                "array index '-' (" + to_string__(ptr->m_value.array->size()) +
                                                                 ") is out of range"));
                     }
 
@@ -12435,7 +12579,7 @@ class json_pointer
                     // iterate array and use index as reference string
                     for (std::size_t i = 0; i < value.m_value.array->size(); ++i)
                     {
-                        flatten(reference_string + "/" + std::to_string(i),
+                        flatten(reference_string + "/" + to_string__(i),
                                 value.m_value.array->operator[](i), result);
                     }
                 }
@@ -12834,9 +12978,9 @@ class basic_json
         result["name"] = "JSON for Modern C++";
         result["url"] = "https://github.com/nlohmann/json";
         result["version"]["string"] =
-            std::to_string(NLOHMANN_JSON_VERSION_MAJOR) + "." +
-            std::to_string(NLOHMANN_JSON_VERSION_MINOR) + "." +
-            std::to_string(NLOHMANN_JSON_VERSION_PATCH);
+            to_string__(NLOHMANN_JSON_VERSION_MAJOR) + "." +
+            to_string__(NLOHMANN_JSON_VERSION_MINOR) + "." +
+            to_string__(NLOHMANN_JSON_VERSION_PATCH);
         result["version"]["major"] = NLOHMANN_JSON_VERSION_MAJOR;
         result["version"]["minor"] = NLOHMANN_JSON_VERSION_MINOR;
         result["version"]["patch"] = NLOHMANN_JSON_VERSION_PATCH;
@@ -12858,7 +13002,7 @@ class basic_json
 #elif defined(__clang__)
         result["compiler"] = {{"family", "clang"}, {"version", __clang_version__}};
 #elif defined(__GNUC__) || defined(__GNUG__)
-        result["compiler"] = {{"family", "gcc"}, {"version", std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + std::to_string(__GNUC_PATCHLEVEL__)}};
+        result["compiler"] = {{"family", "gcc"}, {"version", to_string__(__GNUC__) + "." + to_string__(__GNUC_MINOR__) + "." + to_string__(__GNUC_PATCHLEVEL__)}};
 #elif defined(__HP_cc) || defined(__HP_aCC)
         result["compiler"] = "hp"
 #elif defined(__IBMCPP__)
@@ -12874,7 +13018,7 @@ class basic_json
 #endif
 
 #ifdef __cplusplus
-        result["compiler"]["c++"] = std::to_string(__cplusplus);
+        result["compiler"]["c++"] = to_string__(__cplusplus);
 #else
         result["compiler"]["c++"] = "unknown";
 #endif
@@ -15428,7 +15572,7 @@ class basic_json
             JSON_CATCH (std::out_of_range&)
             {
                 // create better exception explanation
-                JSON_THROW(out_of_range::create(401, "array index " + std::to_string(idx) + " is out of range"));
+                JSON_THROW(out_of_range::create(401, "array index " + to_string__(idx) + " is out of range"));
             }
         }
         else
@@ -15475,7 +15619,7 @@ class basic_json
             JSON_CATCH (std::out_of_range&)
             {
                 // create better exception explanation
-                JSON_THROW(out_of_range::create(401, "array index " + std::to_string(idx) + " is out of range"));
+                JSON_THROW(out_of_range::create(401, "array index " + to_string__(idx) + " is out of range"));
             }
         }
         else
@@ -16364,7 +16508,7 @@ class basic_json
         {
             if (JSON_UNLIKELY(idx >= size()))
             {
-                JSON_THROW(out_of_range::create(401, "array index " + std::to_string(idx) + " is out of range"));
+                JSON_THROW(out_of_range::create(401, "array index " + to_string__(idx) + " is out of range"));
             }
 
             m_value.array->erase(m_value.array->begin() + static_cast<difference_type>(idx));
@@ -20041,7 +20185,7 @@ class basic_json
                             if (JSON_UNLIKELY(static_cast<size_type>(idx) > parent.size()))
                             {
                                 // avoid undefined behavior
-                                JSON_THROW(out_of_range::create(401, "array index " + std::to_string(idx) + " is out of range"));
+                                JSON_THROW(out_of_range::create(401, "array index " + to_string__(idx) + " is out of range"));
                             }
 
                             // default case: insert add offset
@@ -20289,7 +20433,7 @@ class basic_json
                     while (i < source.size() and i < target.size())
                     {
                         // recursive call to compare array values at index i
-                        auto temp_diff = diff(source[i], target[i], path + "/" + std::to_string(i));
+                        auto temp_diff = diff(source[i], target[i], path + "/" + to_string__(i));
                         result.insert(result.end(), temp_diff.begin(), temp_diff.end());
                         ++i;
                     }
@@ -20306,7 +20450,7 @@ class basic_json
                         result.insert(result.begin() + end_index, object(
                         {
                             {"op", "remove"},
-                            {"path", path + "/" + std::to_string(i)}
+                            {"path", path + "/" + to_string__(i)}
                         }));
                         ++i;
                     }
@@ -20317,7 +20461,7 @@ class basic_json
                         result.push_back(
                         {
                             {"op", "add"},
-                            {"path", path + "/" + std::to_string(i)},
+                            {"path", path + "/" + to_string__(i)},
                             {"value", target[i]}
                         });
                         ++i;
